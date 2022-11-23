@@ -1,6 +1,6 @@
 // SpoddyCoder Arduino LED Light PWM Controller
 //
-// v0.92
+// v0.94
 
 #include <EEPROM.h>
 #include "SevSeg.h"
@@ -14,12 +14,12 @@
 #define SELECT_LIGHT_PIN 2
 #define SET_PATTERN_PIN 4
 #define SET_BRIGHTNESS_PIN 8
-#define LIGHT_PIN_1 3
-#define LIGHT_PIN_2 5
-#define LIGHT_PIN_3 6
-#define LIGHT_PIN_4 9
-#define LIGHT_PIN_5 10
-#define LIGHT_PIN_6 11
+#define LIGHT_PIN_1 11
+#define LIGHT_PIN_2 10
+#define LIGHT_PIN_3 9
+#define LIGHT_PIN_4 6
+#define LIGHT_PIN_5 5
+#define LIGHT_PIN_6 3
 #define SEVSEG_NUM_DIGITS 4
 #define SEVSEG_DIGIT_PIN_1 0    // will disable serial (USB) communication
 #define SEVSEG_DIGIT_PIN_2 1    // 
@@ -39,8 +39,8 @@
 #define PATTERN_STEPS 5000
 #define PATTERN_DELAY 2 // ms
 // - UX
-#define WELCOME_MESSAGE "--- happy holidays --- to you anjou --- love paulus _ _ _the"  // NB: not all chars supported
-#define SCROLLING_MESSAGE_DELAY 170 // ms
+#define WELCOME_MESSAGE "  --- ho ho ho --- happy holidays to you anjou --- love paulus                     ___and ugly light dude the"  // NB: not all chars supported by 7 seg display
+#define SCROLLING_MESSAGE_DELAY 150 // ms
 #define SELECT_LIGHT_FLASH_DURATION 1650  // ms
 #define SELECT_LIGHT_FLASH_PULSE 150  // ms
 #define SELECT_LIGHT_ROTATE_SETTINGS_DELAY 3333 // ms
@@ -54,7 +54,7 @@
 #define USER_ACTION_SELECT_LIGHT_LONG_PRESS 4
 #define USER_ACTION_SET_PATTERN_LONG_PRESS 5
 #define USER_ACTION_INACTIVITY 6
-#define NUM_PATTERNS 7
+#define NUM_PATTERNS 9
 #define LIGHT_MAX_BRIGHTNESS 9
 #define DISPLAY_NONE 0
 #define DISPLAY_LIGHT 1
@@ -173,7 +173,7 @@ void setup() {
   // start with welcome message
   scrolling_message = String("    ") + WELCOME_MESSAGE;
   scrolling_message = scrolling_message + " " + String(on_count);
-  scrolling_message = scrolling_message + getOrdinalSuffix(on_count) + "     ";   // pad for scrolling effect
+  scrolling_message = scrolling_message + " " + getOrdinalSuffix(on_count) + "     ";   // pad for scrolling effect
   scrolling_message_len = scrolling_message.length();
   scrolling_message_pos = 0;
   scrolling_message_play = true;
@@ -232,7 +232,7 @@ void doAction (int action) {
     turnOffAllLights();
   }
   switch(action) {
-        case USER_ACTION_SELECT_LIGHT:
+    case USER_ACTION_SELECT_LIGHT:
         if( ! inactive ) {
           selected_light ++;
           if (selected_light >= NUM_LIGHTS) {
@@ -476,34 +476,46 @@ float getPatternValue( int t, int light_num ) {
   t = t + light_offset[light_num]; // apply the random pattern offset
   float rads = 0;
   float value = 0;
-  switch (light_pattern[light_num]) {
+  int rando = 0;
+  switch ( light_pattern[light_num] ) {
     case 0:
         // slow breathing
         rads = t * (PI / PATTERN_STEPS);
         value = sin(rads);
         break;
     case 1:
+        // medium breathing
+        rads = (t * 2) * (PI / PATTERN_STEPS);
+        value = sin(rads);
+        break;
+    case 2:
         // fast breathing
         rads = (t * 4) * (PI / PATTERN_STEPS);
         value = sin(rads);
         break;
-    case 2:
+    case 3:
         // slow flash
         value = ( int(((t * 2)/(PATTERN_STEPS/2))) % 2 == 0 ) ? 0 : 1;
         break;
-    case 3:
-        // fast flash
-        value = ( int(((t * 8)/(PATTERN_STEPS/5))) % 2 == 0 ) ? 0 : 1;
-        break;
     case 4:
-        //slow random flash
-        value = ( int((t/(PATTERN_STEPS/2)) + (t/(PATTERN_STEPS/5))) % 2 == 0 ) ? 0 : 1;
+        // fast flash
+        value = ( int(((t * 4)/(PATTERN_STEPS/5))) % 2 == 0 ) ? 0 : 1;
         break;
     case 5:
+        // slow random flash
+        rando = random(2);
+        value = ( int((t/(PATTERN_STEPS/2.37 + (rando/10))) + (t*2/(PATTERN_STEPS/5))) % 2 == 0 ) ? 0 : 1;
+        break;
+    case 6:
         // fast random flash
         value = ( int(((t * 3)/(PATTERN_STEPS/1.37)) + ((t * 3)/(PATTERN_STEPS/7)) - ((t * 3)/(PATTERN_STEPS/16.7836746))) % 5 == 0 ) ? 1 : 0;
         break;
-    case 6:
+    case 7:
+        // spooky flash
+        rando = random(5);
+        value = ( int((t/(PATTERN_STEPS/(2+rando))) + (t/(PATTERN_STEPS/(5+rando)))) % 2 == 0 ) ? 0 : 1;
+        break;
+    case 8:
         // always on
         value = 1;
         break;

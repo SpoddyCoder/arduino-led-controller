@@ -16,13 +16,15 @@ A simple(-ish) Arduino LED PWM controller;
         * Short press to select next pattern
         * Long press to randomise the light pattern offsets
             * Becasue light displays dont look good when they're perfectly in sync
-        * 7 preset patterns available;
+        * 9 preset patterns available;
             * slow breathing
+            * medium breathing
             * fast breathing
             * slow flash
             * fast flash
-            * slow random
-            * fast random
+            * slow random flash
+            * fast random flash (flicker)
+            * spooky flash
             * always on
     * Set Brightness
         * 9 = max - 0 = off
@@ -65,6 +67,6 @@ arduino:avr:nano:cpu=atmega328old
 Compile, upload...
 
 ```
-arduino-cli compile --fqbn arduino:avr:nano:cpu=atmega328old spoddy-led-controller
-arduino-cli upload -p COM7 --fqbn arduino:avr:nano:cpu=atmega328old spoddy-led-controller
+arduino-cli compile --fqbn arduino:avr:nano:cpu=atmega328old spoddy-led-controller.ino
+arduino-cli upload -p COM7 --fqbn arduino:avr:nano:cpu=atmega328old spoddy-led-controller.ino
 ```
