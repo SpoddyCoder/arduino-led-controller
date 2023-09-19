@@ -1,6 +1,6 @@
 // SpoddyCoder Arduino LED Light PWM Controller
 //
-// v0.94
+// v0.95
 
 #include <EEPROM.h>
 #include "SevSeg.h"
@@ -39,7 +39,7 @@
 #define PATTERN_STEPS 5000
 #define PATTERN_DELAY 2 // ms
 // - UX
-#define WELCOME_MESSAGE "  --- ho ho ho --- happy holidays to you anjou --- love paulus                     ___and ugly light dude the"  // NB: not all chars supported by 7 seg display
+#define WELCOME_MESSAGE "  --- yo yo yo --- happy holidays to you anjou --- love paulus                     ___and ugly light dude the"  // NB: not all chars supported by 7 seg display
 #define SCROLLING_MESSAGE_DELAY 150 // ms
 #define SELECT_LIGHT_FLASH_DURATION 1650  // ms
 #define SELECT_LIGHT_FLASH_PULSE 150  // ms
@@ -54,7 +54,7 @@
 #define USER_ACTION_SELECT_LIGHT_LONG_PRESS 4
 #define USER_ACTION_SET_PATTERN_LONG_PRESS 5
 #define USER_ACTION_INACTIVITY 6
-#define NUM_PATTERNS 9
+#define NUM_PATTERNS 10
 #define LIGHT_MAX_BRIGHTNESS 9
 #define DISPLAY_NONE 0
 #define DISPLAY_LIGHT 1
@@ -215,7 +215,7 @@ void loop() {
     doAction(action);
     for(int i=0; i<NUM_LIGHTS; i++) {
       // lookup pattern value
-      light_brightness_value = getPatternValue( t, i );  
+      light_brightness_value = getPatternValue( t, i );
       // apply user selected overall brightness & convert to duty cycle
       light_brightness_value = abs(light_brightness_value) * LIGHT_BRIGHTNESS_SCALE[light_brightness[i]] * 255;
       // write duty cycle to pin
@@ -375,7 +375,8 @@ void updateSevSegDisplay() {
         msg = String("LI ") + light;
         break;
     case DISPLAY_PATTERN:
-        msg = String("PA ") + pattern;
+        char display_pattern = "0123456789ABCDEF"[pattern]; // we only have 1 7-seg display to print the pattern number
+        msg = String("PA ") + display_pattern;
         break;
     case DISPLAY_BRIGHTNESS:
         msg = String("BR ") + brightness;
@@ -518,6 +519,17 @@ float getPatternValue( int t, int light_num ) {
     case 8:
         // always on
         value = 1;
+        break;
+    case 9:
+        // flamey flicker
+        value = ( int(((t * 3)/(PATTERN_STEPS/1.37)) + ((t * 3)/(PATTERN_STEPS/7)) - ((t * 3)/(PATTERN_STEPS/16.7836746))) % 5 == 0 ) ? 0 : 1;
+        if ( value < 0.5 ) {
+          rando = random(500,1000);
+          value = float(rando) / 1000;
+        } else {
+          rando = random(950,1000);
+          value = float(rando) / 1000;
+        }
         break;
     default:
         // always off
